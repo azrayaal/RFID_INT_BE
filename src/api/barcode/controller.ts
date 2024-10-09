@@ -16,6 +16,7 @@
 
       res.json({
         status: "success",
+        success: true,
         message: message,
         total: rows.length,
         resultTags: rows,
@@ -23,6 +24,7 @@
     } catch (error) {
       console.error("Error fetching RFID tags:", error);
       res.status(500).json({
+        success: false,
         status: "error",
         message: "Internal Server Error",
       });
@@ -55,6 +57,7 @@
       );
 
       res.status(200).json({
+        success: true,
         status: "success",
         total: rows.length,
         data: rows,
@@ -62,6 +65,7 @@
     } catch (error) {
       console.error("Error fetching RFID tags:", error);
       res.status(500).json({
+        success: false,
         status: "error",
         message: "Internal Server Error",
       });
@@ -94,6 +98,7 @@
       );
 
       res.status(200).json({
+        success: true,
         status: "success",
         total: rows.length,
         data: rows,
@@ -101,6 +106,7 @@
     } catch (error) {
       console.error("Error fetching RFID tags:", error);
       res.status(500).json({
+        success: false,
         status: "error",
         message: "Internal Server Error",
       });
@@ -116,7 +122,7 @@
   
       // Validasi untuk memastikan semua field harus diisi
       if (!TID || !EPC || !item_name || quantity === undefined || !item_description || !updatedBy) {
-        res.json({ status: "error", message: "All fields are required." });
+        res.json({    success: false, status: "error", message: "All fields are required." });
         return;
       }
   
@@ -127,7 +133,7 @@
       );
   
       if ((checkTID as any[]).length > 0) {
-        res.json({ status: "error", message: "Tag already in use" });
+        res.json({   success: false, status: "error", message: "Tag already in use" });
         return;
       }
   
@@ -138,7 +144,7 @@
       );
   
       if ((checkEPC as any[]).length > 0) {
-        res.json({ status: "error", message: "EPC already in use" });
+        res.json({ success: false, status: "error", message: "EPC already in use" });
         return;
       }
   
@@ -251,7 +257,7 @@
       );
 
       if (checkTID.length === 0) {
-        res.json({ status: "error", message: "TID not found" });
+        res.json({    success: false, status: "error", message: "TID not found" });
         return;
       }
 
@@ -265,7 +271,7 @@
       );
 
       if (user.length === 0) {
-        res.json({ status: "error", message: "User not found" });
+        res.json({    success: false, status: "error", message: "User not found" });
         return;
       }
 
@@ -295,7 +301,7 @@
       ]);
 
       if (result.affectedRows === 0) {
-        res.json({ status: "error", message: "Failed to clear RFID tag" });
+        res.json({    success: true, status: "error", message: "Failed to clear RFID tag" });
         return;
       }
 
@@ -321,6 +327,7 @@
       );
 
       res.json({
+        success: true,
         status: "success",
         message: "RFID tag cleared successfully",
         data: clearedTag[0],
@@ -328,6 +335,7 @@
     } catch (error) {
       console.error("Error clearing RFID tag:", error);
       res.status(500).json({
+        success: false,
         status: "error",
         message: "Internal Server Error",
       });

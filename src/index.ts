@@ -2,15 +2,18 @@ import express from "express";
 import dotenv from "dotenv";
 import path from "path";
 import cors from 'cors'
-import rfidRoutes from "../src/api/rfid_tags/router";
+import rfidRoutes from "../src/api/barcode/router";
 import userRoutes from "../src/api/user/router";
+import receiveRoutes from "../src/api/receiving/router";
+import loadingRoutes from "../src/api/loading/router";
+import manifestRoutes from "../src/api/manifest/router";
 
 const app = express();
 const PORT = process.env.PORT;
 const apiv = "/api/v1";
 
 // Memuat konfigurasi dari .env file
-dotenv.config();
+dotenv.config()
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "app", "view"));
@@ -36,9 +39,11 @@ app.use(
   })
 );
 
-
-app.use(`${apiv}`, rfidRoutes);
-app.use(`${apiv}`, userRoutes);
+app.use(`${apiv}/rfid-tags`, rfidRoutes);
+app.use(`${apiv}/users`, userRoutes);
+app.use(`${apiv}/receive`, receiveRoutes);
+app.use(`${apiv}/loading`, loadingRoutes);
+app.use(`${apiv}/manifest`, manifestRoutes);
 
 // Menjalankan server
 app.listen(PORT, () => {

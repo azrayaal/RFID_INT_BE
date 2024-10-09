@@ -12,11 +12,11 @@ import {
 const router = Router();
 
 // Rute untuk mendapatkan semua rfid_tags
-router.get("/rfid-tags", getAllRfidTags);
-router.get("/rfid-tags/inuse", getAllInuseRfidTags);
-router.get("/rfid-tags/idle", getAllIdleRfidTags);
-router.post("/rfid-tags", writeRfidTag);
-router.post("/rfid-tags/read", readTag);
-router.post("/rfid-tags/clear", clearRfidTag);
+router.get("/", getAllRfidTags);
+router.get("/inuse", getAllInuseRfidTags);
+router.get("/idle", getAllIdleRfidTags);
+router.post("/", writeRfidTag);
+router.post("/read", readTag);
+router.post("/clear", clearRfidTag);
 
 export default router;
