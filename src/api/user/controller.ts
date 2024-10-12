@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
 import pool from "../../db"; // Import koneksi database
 import { ResultSetHeader } from "mysql2"; // Import tipe data untuk hasil query
+import bcrypt from "bcrypt";
 
-// Membaca semua data pengguna
-// Membaca semua data pengguna dengan nama lokasi
 export const getAllUsers = async (
   req: Request,
   res: Response
@@ -15,7 +14,7 @@ export const getAllUsers = async (
         u.username, 
         u.full_name, 
         u.role, 
-        u.contact_info, 
+        u.email, 
         l.name AS location_name, 
         l.address AS location_address 
       FROM user u
@@ -41,32 +40,71 @@ export const createUser = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+  // Ensure the return type is Promise<void>
   try {
-    const { username, full_name, role, contact_info, location_id } = req.body;
+    const { username, full_name, role, email, location_id, password } =
+      req.body;
 
+    // Cek duplikasi email
+    const [checkEmail] = await pool.query<ResultSetHeader[]>(
+      "SELECT * FROM user WHERE email = ?",
+      [email]
+    );
+
+    // Cek duplikasi username
+    const [checkUsername] = await pool.query<ResultSetHeader[]>(
+      "SELECT * FROM user WHERE username = ?",
+      [username]
+    );
+
+    if (checkEmail.length > 0) {
+      // No need to return res.json() as a value, just call it
+      res.status(400).json({
+        status: "error",
+        message: "Email already exists",
+      });
+      return; // Ensure to return to stop further execution
+    }
+
+    if (checkUsername.length > 0) {
+      res.status(400).json({
+        status: "error",
+        message: "Username already exists",
+      });
+      return; // Ensure to return to stop further execution
+    }
+
+    const saltRounds = 10;
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    // Membuat user baru
     const query = `
-      INSERT INTO user (username, full_name, role, contact_info, location_id)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO user (username, full_name, role, email, location_id, password)
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
 
     const [result] = await pool.query<ResultSetHeader>(query, [
       username,
       full_name,
       role,
-      contact_info,
+      email,
       location_id,
+      hashedPassword,
     ]);
 
+    // Just call res.json without returning the Response object
     res.json({
       status: "success",
       message: "User created successfully",
       userId: result.insertId,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating user:", error);
+    // Handle the error and stop further execution
     res.status(500).json({
       status: "error",
       message: "Internal Server Error",
+      details: error.message, // Optional: display detailed error message
     });
   }
 };
@@ -85,7 +123,7 @@ export const getUserById = async (
         u.username, 
         u.full_name, 
         u.role, 
-        u.contact_info, 
+        u.email, 
         l.name AS location_name, 
         l.address AS location_address 
       FROM user u
@@ -123,14 +161,14 @@ export const updateUser = async (
 ): Promise<void> => {
   try {
     const userId = req.params.id;
-    const { username, full_name, role, contact_info, location_id } = req.body;
+    const { username, full_name, role, email, location_id } = req.body;
 
     const query = `
       UPDATE user SET 
       username = ?, 
       full_name = ?, 
       role = ?, 
-      contact_info = ?, 
+      email = ?, 
       location_id = ?
       WHERE id = ?
     `;
@@ -139,7 +177,7 @@ export const updateUser = async (
       username,
       full_name,
       role,
-      contact_info,
+      email,
       location_id,
       userId,
     ]);
